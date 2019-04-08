@@ -55,6 +55,26 @@ app.post('/new_teach', uplaod.single(form_element_name), (req, res) => {
     })
 })
 
+app.get('/file/:name', (req, res, next) => {
+    var options = {
+      root: __dirname + '/uploads/',
+      dotfiles: 'deny',
+      headers: {
+          'x-timestamp': Date.now(),
+          'x-sent': true
+      }
+    };
+  
+    var fileName = req.params.name;
+    res.sendFile(fileName, options, function (err) {
+      if (err) {
+        next(err);
+      } else {
+        console.log('Sent:', fileName);
+      }
+    });
+});
+
 app.post('/add_mark', (req, res) => {
     MongoClient.connect(url, (err, db) => {
         if (err) throw err;
@@ -69,6 +89,16 @@ app.post('/add_mark', (req, res) => {
                 if (err) throw err;
                 res.json({type: "ok"})
             })
+        })
+    })
+})
+
+app.get('/get_teacher', (req, res) => {
+    MongoClient.connect(url, (err, db) => {
+        if (err) throw err;
+        var dbo = db.db("teachers")
+        dbo.collection("teachers").findOne({_id: ObjectId(req.query.id)}, (err, result) => {
+            res.json(result)
         })
     })
 })
